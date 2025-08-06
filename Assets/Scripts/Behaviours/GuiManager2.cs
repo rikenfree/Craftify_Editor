@@ -879,4 +879,9 @@ public class GuiManager2 : MonoBehaviour
 		playerProfileImage.sprite = degultProfile;
 		Login = 0;
 	}
+
+    public void OnClickIAPButton()
+    {
+        InAppPurchase.Instance.LimitedNoAds();
+    }
 }

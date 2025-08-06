@@ -1,69 +1,92 @@
 using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Purchasing;
+using Unity.Services.Core;
+using Unity.Services.Core.Environments;
 
 public class InAppPurchase : MonoBehaviour, IStoreListener
 {
+    public static InAppPurchase Instance;
+
     private static IStoreController storeController;
-    private static IExtensionProvider extensionProvider;
+    private static IExtensionProvider storeExtensionProvider;
 
-    private static string noadsPurchase = "com.craftify.editor.formcpe.noads";
+    private static string noadsPurchase = "com.noads.subscription";
 
-    private void Start()
+    private async void Awake()
     {
-        if (storeController == null)
+        if (Instance == null)
         {
-            InitializePurchasing();
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            await InitializeUnityGamingServices();
+
+            if (storeController == null)
+                InitializePurchasing();
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private async Task InitializeUnityGamingServices()
+    {
+        try
+        {
+            var options = new InitializationOptions();
+            options.SetEnvironmentName("production");
+            await UnityServices.InitializeAsync(options);
+            Debug.Log("Unity Gaming Services Initialized Successfully.");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Failed to initialize Unity Gaming Services: " + e.Message);
         }
     }
 
     public void InitializePurchasing()
     {
-        if (!IsInitialized())
-        {
-            var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
-            builder.AddProduct(noadsPurchase, ProductType.Subscription);
+        if (IsInitialized())
+            return;
 
-            UnityPurchasing.Initialize(this, builder);
-        }
+        var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
+        builder.AddProduct(noadsPurchase, ProductType.Subscription);
+
+        Debug.Log("Initializing Unity IAP...");
+        UnityPurchasing.Initialize(this, builder);
     }
+
     private bool IsInitialized()
     {
-        return storeController != null && extensionProvider != null;
+        return storeController != null && storeExtensionProvider != null;
     }
+
     public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
     {
-        Debug.Log("OnInitialized: PASS");
+        Debug.Log("IAP Initialization Successful.");
         storeController = controller;
-        extensionProvider = extensions;
+        storeExtensionProvider = extensions;
 
-        Debug.Log("Available items:");
-        foreach (var item in storeController.products.all)
-        {
-            Debug.Log(item.receipt);
-            if (item.availableToPurchase)
-            {
-                Debug.Log(string.Join(" - ",
-                    new[]
-                    {
-                    item.metadata.localizedTitle,
-                    item.metadata.localizedDescription,
-                    item.metadata.isoCurrencyCode,
-                    item.metadata.localizedPrice.ToString(),
-                    item.metadata.localizedPriceString,
-                    item.transactionID,
-                    item.receipt
-                    }));
-            }
-            else
-            {
-                Debug.Log("Item Not Purchase");
-            }
-        }
-
+        if (IsSubscribed())
+            GrantNoAds();
+        else
+            RevokeNoAds();
     }
 
+    public void OnInitializeFailed(InitializationFailureReason error)
+    {
+        Debug.LogError("IAP Initialization Failed: " + error);
+    }
+
+    public void OnInitializeFailed(InitializationFailureReason error, string message)
+    {
+        Debug.LogError($"IAP Initialization Failed: {error} - {message}");
+    }
+
+    // Call this from button OnClick
     public void LimitedNoAds()
     {
         BuyProductID(noadsPurchase);
@@ -73,11 +96,13 @@ public class InAppPurchase : MonoBehaviour, IStoreListener
     {
         if (!IsInitialized())
         {
-            Debug.LogError("Purchasing not initialized.");
+            Debug.LogError("Purchasing not initialized. Retrying...");
+            InitializePurchasing();
             return;
         }
 
         Product product = storeController.products.WithID(productId);
+
         if (product != null && product.availableToPurchase)
         {
             Debug.Log($"Purchasing product: {product.definition.id}");
@@ -89,72 +114,87 @@ public class InAppPurchase : MonoBehaviour, IStoreListener
         }
     }
 
-    public void RestorePurchases()
-    {
-        if (!IsInitialized())
-        {
-            Debug.Log("RestorePurchases FAIL. Not initialized.");
-        }
-        else if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.OSXPlayer)
-        {
-            Debug.Log("RestorePurchases started ...");
-            IAppleExtensions extension = extensionProvider.GetExtension<IAppleExtensions>();
-            extension.RestoreTransactions(delegate (bool result)
-            {
-                Debug.Log("RestorePurchases continuing: " + result + ". If no further messages, no purchases available to restore.");
-            });
-        }
-        else
-        {
-            Debug.Log("RestorePurchases FAIL. Not supported on this platform. Current = " + Application.platform);
-        }
-    }
-
-    public void OnInitializeFailed(InitializationFailureReason error)
-    {
-        Debug.LogError("Failed to initialize purchasing: " + error);
-    }
-
-    public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
-    {
-        Debug.LogError("Purchase of " + product.definition.id + " failed: " + failureReason);
-    }
-
-    public void OnPurchaseComplete(Product product)
-    {
-        Debug.Log("Purchase of " + product.definition.id + " successful.");
-        // Grant purchased items to the player and consume them if needed
-    }
-
-    public void OnInitializeFailed(InitializationFailureReason error, string message)
-    {
-        throw new NotImplementedException();
-    }
-
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs purchaseEvent)
     {
         if (string.Equals(purchaseEvent.purchasedProduct.definition.id, noadsPurchase, StringComparison.Ordinal))
         {
-            Debug.Log("Remove Ads Purchase Successful");
-
-            // Save "no ads" preference
-            PlayerPrefs.SetInt("NoAds", 1);
-            PlayerPrefs.Save();
-
-            // Immediately remove any active banner ads
-            if (SuperStarSdk.SuperStarAd.Instance != null)
-            {
-                SuperStarSdk.SuperStarAd.Instance.HideBannerAd();
-            }
-
-            // Optional: If you want to reload ad settings without restarting
-            if (SuperStarSdk.SuperStarAd.Instance != null)
-            {
-                SuperStarSdk.SuperStarAd.Instance.Setup();
-            }
+            Debug.Log("Monthly No Ads Subscription Purchased");
+            GrantNoAds();
         }
 
-
         return PurchaseProcessingResult.Complete;
+    }
+
+    public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
+    {
+        Debug.LogError($"Purchase of {product.definition.id} failed: {failureReason}");
+    }
+
+    public void RestorePurchases()
+    {
+        if (!IsInitialized())
+        {
+            Debug.LogError("RestorePurchases failed. Not initialized.");
+            return;
+        }
+
+        if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.OSXPlayer)
+        {
+            Debug.Log("RestorePurchases started...");
+            var apple = storeExtensionProvider.GetExtension<IAppleExtensions>();
+            apple.RestoreTransactions(result =>
+            {
+                Debug.Log("RestorePurchases result: " + result);
+                if (result && IsSubscribed())
+                    GrantNoAds();
+                else
+                    RevokeNoAds();
+            });
+        }
+        else
+        {
+            Debug.Log("RestorePurchases not supported on this platform.");
+        }
+    }
+
+    public bool IsSubscribed()
+    {
+        if (!IsInitialized())
+            return PlayerPrefs.GetInt("NoAds", 0) == 1;
+
+        Product product = storeController.products.WithID(noadsPurchase);
+
+        if (product != null && product.hasReceipt)
+        {
+            Debug.Log("Valid subscription receipt found.");
+            return true;
+        }
+
+        return false;
+    }
+
+    private void GrantNoAds()
+    {
+        PlayerPrefs.SetInt("NoAds", 1);
+        PlayerPrefs.Save();
+        Debug.Log("No Ads Granted");
+
+        if (SuperStarSdk.SuperStarAd.Instance != null)
+        {
+            SuperStarSdk.SuperStarAd.Instance.HideBannerAd();
+            SuperStarSdk.SuperStarAd.Instance.Setup();
+        }
+    }
+
+    private void RevokeNoAds()
+    {
+        PlayerPrefs.SetInt("NoAds", 0);
+        PlayerPrefs.Save();
+        Debug.Log("No Ads Revoked");
+
+        if (SuperStarSdk.SuperStarAd.Instance != null)
+        {
+            SuperStarSdk.SuperStarAd.Instance.ShowBannerAd();
+        }
     }
 }

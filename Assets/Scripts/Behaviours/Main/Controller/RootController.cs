@@ -54,6 +54,11 @@ namespace Main.Controller
 			return false;
 		}
 
+		public void OnClickIAPButton()
+		{
+			InAppPurchase.Instance.LimitedNoAds();
+		}
+
 		
 	}
 }

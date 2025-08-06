@@ -48265,7 +48265,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1694220298}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 668}
+        m_TargetAssemblyTypeName: GuiManager2, Assembly-CSharp
+        m_MethodName: OnClickIAPButton
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!222 &1694220300
 CanvasRenderer:
   m_ObjectHideFlags: 0
