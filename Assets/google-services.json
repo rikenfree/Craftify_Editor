@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "213926403420",
+    "project_id": "d-cape-editor-for-mcpe",
+    "storage_bucket": "d-cape-editor-for-mcpe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:213926403420:android:71c2b5a5651ca4d84cb599",
+        "android_client_info": {
+          "package_name": "com.minecraftmania.cape.editor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSods1nBl6dF7LA9UskSeQo1cVubpFE18"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" package="com.craftify.editor.formcpe">
+  <application>
+    <!-- ✅ AdMob App ID -->
+    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3651562624933642~8651772710" />
+    <!-- Replace with your actual App ID -->
+    <!-- Content Providers -->
+    <provider android:name="com.cartoontexas.andyr.unityplugin.UnitySSContentProvider" android:authorities="MapsMCPE" android:exported="false" android:grantUriPermissions="true" />
+    <provider android:name="com.cartoontexas.andyr.unityplugin.UnitySSContentProvider" android:authorities="velocitygamers_skineditor" android:exported="false" android:grantUriPermissions="true" />
+    <provider android:name="com.cartoontexas.andyr.unityplugin.UnitySSContentProvider" android:authorities="velocitygamers_capeeditor" android:exported="false" android:grantUriPermissions="true" />
+    <!-- Unity Player Activity -->
+    <activity android:name="com.unity3d.player.UnityPlayerActivity" android:theme="@style/UnityThemeSelector">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+    </activity>
+    <!-- Unity Game Activity -->
+    <activity android:name="com.unity3d.player.UnityPlayerGameActivity" android:theme="@style/BaseUnityGameActivityTheme">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+      <meta-data android:name="android.app.lib_name" android:value="game" />
+    </activity>
+  </application>
+</manifest>

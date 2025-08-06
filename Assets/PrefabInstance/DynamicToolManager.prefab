@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8147332245771235488
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2987292386682266674}
+  - component: {fileID: 7255492199752097066}
+  - component: {fileID: 3753912155853948214}
+  m_Layer: 0
+  m_Name: DynamicToolManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2987292386682266674
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8147332245771235488}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7255492199752097066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8147332245771235488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae027aa3f6399d24585282952170abd1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  manifestRootDirect:
+    format_version: 1
+    header:
+      name: SkinEditorMCPEDirect
+      uuid: 29d7ced7-f0e4-4dae-af49-7a47d39aadc9
+      version: 010000000000000000000000
+    modules:
+    - type: skin_pack
+      uuid: ac09efd4-2c1a-4243-b814-b17b887969b2
+      version: 010000000000000000000000
+  manifestRootExport:
+    format_version: 1
+    header:
+      name: SkinEditorMCPEExport
+      uuid: 29d7ced7-f0e4-4dae-af49-7a47d39aadc9
+      version: 010000000000000000000000
+    modules:
+    - type: skin_pack
+      uuid: ac09efd4-2c1a-4243-b814-b17b887969b2
+      version: 010000000000000000000000
+  if_skinPackName: {fileID: 0}
+  if_skinName: {fileID: 0}
+  if_versionNumber: {fileID: 0}
+  txt_imageName: {fileID: 0}
+  go_verionField: {fileID: 0}
+  go_skinPack: {fileID: 0}
+  currentSelectedIndex: 0
+  skinOldDataRoot:
+    skins: []
+    serialize_name: 
+    localization_name: 
+  skinDataRoot:
+    skins:
+    - localization_name: 
+      geometry: 
+      texture: 
+      type: 
+    serialize_name: 
+    localization_name: 
+  allSelectedImages: []
+  textdatastring: 
+  if_skinNameRename: {fileID: 0}
+  if_versionNumberRename: {fileID: 0}
+  character: {fileID: 0}
+--- !u!114 &3753912155853948214
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8147332245771235488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4664ba342b714d649b6a57108857ca04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fileURL: https://velocitytechnosoft.com/API/TestAddressable/SkinEditorMCPE.mcpack
