@@ -6670,6 +6670,22 @@ MonoBehaviour:
       - "D\xFCnya Kapmak"
       Flags: 00000000000000000000
       Languages_Touch: []
+    - Term: No Ads
+      TermType: 0
+      Description: 
+      Languages:
+      - No Ads
+      - Sin Anuncios
+      - "Pas De Publicit\xE9"
+      - "\u0411\u0435\u0437 \u0420\u0435\u043A\u043B\u0430\u043C\u044B"
+      - "Kh\xF4ng C\xF3 Qu\u1EA3ng C\xE1o"
+      - "Sem An\xFAncios"
+      - Bez Reklam
+      - "Nessuna Pubblicit\xE0"
+      - Keine Werbung
+      - Reklam Yok
+      Flags: 00000000000000000000
+      Languages_Touch: []
     CaseInsensitiveTerms: 0
     OnMissingTranslation: 1
     mTerm_AppName: 
