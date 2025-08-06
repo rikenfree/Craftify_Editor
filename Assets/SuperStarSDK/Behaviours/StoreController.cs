@@ -438,6 +438,26 @@ public class StoreController : MonoBehaviour, IStoreListener
         Debug.Log("transactionID" + e.purchasedProduct.metadata.isoCurrencyCode);
         Debug.Log("isoCurrencyCode" + productID);
         Debug.Log("localizedPrice" + (double)e.purchasedProduct.metadata.localizedPrice);
+
+
+        //Remove Ads
+
+        PlayerPrefs.SetInt("NoAds", 1);
+        PlayerPrefs.Save();
+
+        // Immediately remove any active banner ads
+        if (SuperStarSdk.SuperStarAd.Instance != null)
+        {
+            SuperStarSdk.SuperStarAd.Instance.HideBannerAd();
+        }
+
+        // Optional: If you want to reload ad settings without restarting
+        if (SuperStarSdk.SuperStarAd.Instance != null)
+        {
+            SuperStarSdk.SuperStarAd.Instance.Setup();
+        }
+
+
         // Indicate if we have handled this purchase.
         //   PurchaseProcessingResult.Complete: ProcessPurchase will not be called
         //     with this product again, until next purchase.
