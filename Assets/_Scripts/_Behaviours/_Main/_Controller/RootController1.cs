@@ -59,6 +59,12 @@ namespace Main.Controller
 				return !newCharacterObject.activeSelf;
 			}
 			return false;
-		}		
-	}
+		}
+
+        public void OnClickIAPButton()
+        {
+            InAppPurchase.Instance.LimitedNoAds();
+        }
+    }
+
 }

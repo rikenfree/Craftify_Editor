@@ -372,111 +372,80 @@ public class StoreController : MonoBehaviour, IStoreListener
         Debug.Log("Purchase OK: " + e.purchasedProduct.definition.id);
         Debug.Log("Receipt: " + e.purchasedProduct.receipt);
 
-        m_PurchaseInProgress = false;
-
-#if RECEIPT_VALIDATION // Local validation is available for GooglePlay, and Apple stores
-        if (m_IsGooglePlayStoreSelected ||
-            Application.platform == RuntimePlatform.IPhonePlayer ||
-            Application.platform == RuntimePlatform.OSXPlayer ||
-            Application.platform == RuntimePlatform.tvOS) {
-            try {
-                var result = validator.Validate(e.purchasedProduct.receipt);
-                Debug.Log("Receipt is valid. Contents:");
-                foreach (IPurchaseReceipt productReceipt in result) {
-                    Debug.Log(productReceipt.productID);
-                    Debug.Log(productReceipt.purchaseDate);
-                    Debug.Log(productReceipt.transactionID);
-
-                    GooglePlayReceipt google = productReceipt as GooglePlayReceipt;
-                    if (null != google) {
-                        Debug.Log(google.purchaseState);
-                        Debug.Log(google.purchaseToken);
-                    }
-
-                    AppleInAppPurchaseReceipt apple = productReceipt as AppleInAppPurchaseReceipt;
-                    if (null != apple) {
-                        Debug.Log(apple.originalTransactionIdentifier);
-                        Debug.Log(apple.subscriptionExpirationDate);
-                        Debug.Log(apple.cancellationDate);
-                        Debug.Log(apple.quantity);
-                    }
-
-                    // For improved security, consider comparing the signed
-                    // IPurchaseReceipt.productId, IPurchaseReceipt.transactionID, and other data
-                    // embedded in the signed receipt objects to the data which the game is using
-                    // to make this purchase.
-                }
-            } catch (IAPSecurityException ex) {
-                Debug.Log("Invalid receipt, not unlocking content. " + ex);
-                return PurchaseProcessingResult.Complete;
-            }
-        }
-#endif
-
-        // Unlock content from purchases here.
-#if USE_PAYOUTS
-        if (e.purchasedProduct.definition.payouts != null) {
-            Debug.Log("Purchase complete, paying out based on defined payouts");
-            foreach (var payout in e.purchasedProduct.definition.payouts) {
-                Debug.Log(string.Format("Granting {0} {1} {2} {3}", payout.quantity, payout.typeString, payout.subtype, payout.data));
-            }
-        }
-#endif
-
-
         string productID = e.purchasedProduct.definition.id;
 
-        Debug.Log("Given Reward");
-        //   productList.Handle_ProductPurchase(productID);
+#if RECEIPT_VALIDATION
+    try
+    {
+        var validator = new UnityEngine.Purchasing.Security.CrossPlatformValidator(
+            UnityEngine.Purchasing.Security.GooglePlayTangle.Data(),
+            UnityEngine.Purchasing.Security.AppleTangle.Data(),
+            Application.identifier);
 
-        //AnalyticsManager.LogAdEvent_PurchaseProduct(
-        //    productID,
-        //    e.purchasedProduct.transactionID,
-        //    e.purchasedProduct.metadata.isoCurrencyCode,
-        //    (double)e.purchasedProduct.metadata.localizedPrice);
-        Debug.Log("productID" + productID);
-        Debug.Log("transactionID" + e.purchasedProduct.metadata.isoCurrencyCode);
-        Debug.Log("isoCurrencyCode" + productID);
-        Debug.Log("localizedPrice" + (double)e.purchasedProduct.metadata.localizedPrice);
+        var result = validator.Validate(e.purchasedProduct.receipt);
+        Debug.Log("Receipt is valid. Contents:");
 
+        foreach (var productReceipt in result)
+        {
+            Debug.Log("Product ID: " + productReceipt.productID);
+            Debug.Log("Purchase Date: " + productReceipt.purchaseDate);
+            Debug.Log("Transaction ID: " + productReceipt.transactionID);
 
-        //Remove Ads
+            // Google Play
+            if (productReceipt is GooglePlayReceipt google)
+            {
+                Debug.Log("Google Purchase State: " + google.purchaseState);
+                Debug.Log("Google Token: " + google.purchaseToken);
+            }
 
+            // Apple Store
+            if (productReceipt is AppleInAppPurchaseReceipt apple)
+            {
+                Debug.Log("Apple Expiration: " + apple.subscriptionExpirationDate);
+                Debug.Log("Apple Cancellation: " + apple.cancellationDate);
+
+                if (apple.subscriptionExpirationDate > DateTime.UtcNow &&
+                    apple.cancellationDate == null)
+                {
+                    Debug.Log("Active Apple Subscription: Removing Ads");
+                    GrantNoAds();
+                }
+                else
+                {
+                    Debug.Log("Apple Subscription expired or cancelled");
+                    PlayerPrefs.SetInt("NoAds", 0);
+                }
+            }
+        }
+    }
+    catch (IAPSecurityException ex)
+    {
+        Debug.LogError("Invalid receipt, not unlocking content. " + ex);
+        return PurchaseProcessingResult.Complete;
+    }
+#endif
+
+        // For Google Play, we assume subscription is valid if it has a receipt
+        if (productID == "com.craftify.editor.formcpe.noads" && e.purchasedProduct.hasReceipt)
+        {
+            Debug.Log("Google Subscription: Removing Ads");
+            GrantNoAds();
+        }
+
+        return PurchaseProcessingResult.Complete;
+    }
+
+    // Helper method to grant No Ads
+    private void GrantNoAds()
+    {
         PlayerPrefs.SetInt("NoAds", 1);
         PlayerPrefs.Save();
 
-        // Immediately remove any active banner ads
         if (SuperStarSdk.SuperStarAd.Instance != null)
         {
             SuperStarSdk.SuperStarAd.Instance.HideBannerAd();
-        }
-
-        // Optional: If you want to reload ad settings without restarting
-        if (SuperStarSdk.SuperStarAd.Instance != null)
-        {
             SuperStarSdk.SuperStarAd.Instance.Setup();
         }
-
-
-        // Indicate if we have handled this purchase.
-        //   PurchaseProcessingResult.Complete: ProcessPurchase will not be called
-        //     with this product again, until next purchase.
-        //   PurchaseProcessingResult.Pending: ProcessPurchase will be called
-        //     again with this product at next app launch. Later, call
-        //     m_Controller.ConfirmPendingPurchase(Product) to complete handling
-        //     this purchase. Use to transactionally save purchases to a cloud
-        //     game service.
-
-        // AudioManager.Instance.Play_SoundEffect(null, purchaseSuccessSound);
-
-#if DELAY_CONFIRMATION
-        StartCoroutine(ConfirmPendingPurchaseAfterDelay(e.purchasedProduct));
-        return PurchaseProcessingResult.Pending;
-#else
-        ///UpdateProductUI( e.purchasedProduct );
-
-        return PurchaseProcessingResult.Complete;
-#endif
     }
 
     public void OnPurchaseFailed(Product item, PurchaseFailureReason r)
